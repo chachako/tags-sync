@@ -1,0 +1,102 @@
+name: 'tags-sync'
+description: 'Sync another repository tags as branches. (base -> head)'
+inputs:
+  base-repository:
+    description: 'Base repository name with owner. For example, square/dagger'
+    required: true
+  head-repository:
+    description: 'Head repository name with owner. For example, google/dagger'
+    default: ${{ github.repository }}
+  cloned-path:
+    description: 'Relative path under $GITHUB_WORKSPACE to clone the head repository'
+    default: 'head-repo'
+  filter-tags:
+    description: >
+      Filter tags by regular expression. For example, the regex "^v[2-9]\..*" controls
+      tags that only sync versions larger than `v2`.
+    default: '.*'
+  apply-patch:
+    description: >
+      URL of patch file to be applied after each tag is synchronized as a branch.
+      Patch url can usually be obtained by comparing two branches or commits.
+      
+      
+      The process of applying patch occurs before the "git push", so if the value is
+      empty, it means that all new branches will be pushed directly to the "head-repository"
+      after the tags are synchronized.
+      
+      
+      The value based on the [URL Standard](https://url.spec.whatwg.org/).
+      
+      
+      For example, apply all commits that the "head-repository" master branch is ahead
+      of the "base-repository" master branch to each new tag:
+      
+      
+      https://github.com/base-owner/base-repository/compare/master...head-owner:head-repository:master.patch
+  patch-message:
+    description: 'Commit message for "git commit" when applying patch'
+    default: ''
+  patch-author:
+    description: 'Author for "git commit" when applying patch'
+    default: 'github-actions[bot]'
+  patch-author-email:
+    description: 'Author email for "git commit" when applying patch'
+    default: 'github-actions[bot]@users.noreply.github.com'
+  patch-committer:
+    description: 'Committer for "git commit" when applying patch'
+    default: 'chachako'
+  patch-committer-email:
+    description: 'Committer email for "git commit" when applying patch'
+    default: '58068445+chachako@users.noreply.github.com'
+  commands-after-sync:
+    description: >
+      Bash commands to be executed after each new branch is pushed. This is equivalent
+      to running `bash -c "${VALUE}"`.
+    default: ''
+  github-token:
+    description: >
+      Personal access token (PAT) used to fetch the repository. The PAT is configured
+      with the local git config, which enables your scripts to run authenticated git
+      commands. The post-job step removes the PAT.
+      
+      
+      We recommend using a service account with the least permissions necessary.
+      Also when generating a new PAT, select the least scopes necessary.
+      
+      
+      [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+    default: ${{ github.token }}
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v3
+    - uses: dtolnay/rust-toolchain@stable
+    - uses: Swatinem/rust-cache@v2
+
+    - name: Configure cache for head repository
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/${{ inputs.cloned-path }}
+        key: tags-sync-${{ inputs.base-repository }}-${{ hashFiles(format('{0}/new_tags.txt', github.workspace)) }}
+
+    - name: Build and run
+      shell: bash
+      run: |
+        RUST_LOG=DEBUG
+        BASE_REPO=${{ inputs.base-repository }}
+        HEAD_REPO=${{ inputs.head-repository }}
+        CLONED_PATH=${{ inputs.cloned-path }}
+        FILTER_TAGS=${{ inputs.filter-tags }}
+        PATCH_URL=${{ inputs.apply-patch }}
+        PATCH_MESSAGE=${{ inputs.patch-message }}
+        PATCH_AUTHOR=${{ inputs.patch-author }}
+        PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}
+        PATCH_COMMITTER=${{ inputs.patch-committer }}
+        PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}
+        COMMANDS_AFTER_SYNC=${{ inputs.commands-after-sync }}
+        GITHUB_TOKEN=${{ inputs.github-token }}
+        GITHUB_WORKSPACE=${{ github.workspace }}
+        GITHUB_ACTOR=${{ github.actor }}
+        
+        cargo run --release
