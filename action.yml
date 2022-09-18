@@ -96,24 +96,23 @@ runs:
         path: ${{ github.workspace }}/${{ inputs.cloned-path }}
         key: tags-sync-${{ inputs.base-repository }}-${{ hashFiles(format('{0}/new_tags.txt', github.workspace)) }}
 
-    - name: Put scripts into a temp file
-      shell: bash
-      run: echo "${{ inputs.scripts-after-sync }}" > $GITHUB_WORKSPACE/scripts.tmp
-
     - name: Build and run
       shell: bash
       run: |
         RUST_LOG=DEBUG
-        BASE_REPO="${{ inputs.base-repository }}"
-        HEAD_REPO="${{ inputs.head-repository }}"
-        CLONED_PATH="${{ inputs.cloned-path }}"
-        FILTER_TAGS="${{ inputs.filter-tags }}"
-        PATCH_URL="${{ inputs.apply-patch }}"
-        PATCH_MESSAGE="${{ inputs.patch-message }}"
-        PATCH_AUTHOR="${{ inputs.patch-author }}"
-        PATCH_AUTHOR_EMAIL="${{ inputs.patch-author-email }}"
-        PATCH_COMMITTER="${{ inputs.patch-committer }}"
-        PATCH_COMMITTER_EMAIL="${{ inputs.patch-committer-email }}"
-        GITHUB_TOKEN="${{ inputs.github-token }}"
+        BASE_REPO=${{ inputs.base-repository }}
+        HEAD_REPO=${{ inputs.head-repository }}
+        CLONED_PATH=${{ inputs.cloned-path }}
+        FILTER_TAGS=${{ inputs.filter-tags }}
+        PATCH_URL=${{ inputs.apply-patch }}
+        PATCH_MESSAGE=${{ inputs.patch-message }}
+        PATCH_AUTHOR=${{ inputs.patch-author }}
+        PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}
+        PATCH_COMMITTER=${{ inputs.patch-committer }}
+        PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}
+        SCRIPTS_AFTER_SYNC=${{ inputs.scripts-after-sync }}
+        GITHUB_TOKEN=${{ inputs.github-token }}
+        GITHUB_WORKSPACE=${{ github.workspace }}
+        GITHUB_ACTOR=${{ github.actor }}
         
-        cargo run --release --color=always --message-format=json-diagnostic-rendered-ansi
+        cargo run --release

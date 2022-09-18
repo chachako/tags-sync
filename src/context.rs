@@ -3,7 +3,9 @@ use std::{
     fmt,
     fmt::{Debug, Formatter, Write as FmtWrite},
     fs,
+    io::{BufRead, Read, Write as IoWrite},
     path::{Path, PathBuf},
+    process::Command,
 };
 
 use anyhow::{bail, Context as ResultContext, Result};
@@ -68,10 +70,9 @@ impl Context {
         let (head_repo_owner, head_repo_name) = parse_repo(get_env!("HEAD_REPO"))?;
 
         // Multiple scripts separated by line starts with '#!'
-        let tmp_scripts = github_workspace_path.join("scripts.tmp");
         let mut scripts = HashSet::<String>::new();
         let mut script = String::new();
-        for line in fs::read_to_string(&tmp_scripts)?.lines() {
+        for line in get_env!("SCRIPTS_AFTER_SYNC").lines() {
             let line = line.trim();
             if line.starts_with("#!") {
                 // Add previous script
@@ -88,7 +89,6 @@ impl Context {
         if !script.is_empty() {
             scripts.insert(script);
         }
-        fs::remove_file(tmp_scripts)?;
 
         let result = Self {
             base_repo_owner,
@@ -293,15 +293,14 @@ mod tests {
         ($name:ident($context:ident)$block:block) => {
             test_async_fn!($name {
                 let tmp_dir = tempdir()?;
-                let temp_dir_path = &tmp_dir.path().canonicalize()?;
-                env::set_var("GITHUB_WORKSPACE", temp_dir_path.as_os_str());
+                env::set_var("GITHUB_WORKSPACE", &tmp_dir.path().canonicalize()?.as_os_str());
                 env::set_var("BASE_REPO", "rust-lang/rustlings");
                 env::set_var("HEAD_REPO", "ZhangHanDong/rustlings");
                 env::set_var("CLONED_PATH", "rustlings-head");
                 env::set_var("FILTER_TAGS", ".*");
                 env::set_var("PATCH_URL", "https://github.com/rust-lang/rustlings/compare/main...ZhangHanDong:rustlings:main.patch");
+                env::set_var("SCRIPTS_AFTER_SYNC", "echo 'hello world'");
                 env::set_var("GITHUB_ACTOR", "chachako");
-                fs::write(temp_dir_path.join("scripts.tmp"), "echo 'hello world'")?;
                 let $context = Context::new()?;
                 $block
             });
