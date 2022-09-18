@@ -1,11 +1,11 @@
 name: 'tags-sync'
-description: 'Sync another repository tags as branches. (base -> head)'
+description: 'Sync another repository new tags as branches. (upstream -> fork)'
 inputs:
   base-repository:
-    description: 'Base repository name with owner. For example, square/dagger'
+    description: 'Base (upstream) repository name with owner. For example, torvalds/linux'
     required: true
   head-repository:
-    description: 'Head repository name with owner. For example, google/dagger'
+    description: 'Head (fork) repository name with owner. For example, Rust-for-Linux/linux'
     default: ${{ github.repository }}
   cloned-path:
     description: 'Relative path under $GITHUB_WORKSPACE to clone the head repository'
@@ -17,13 +17,13 @@ inputs:
     default: '.*'
   apply-patch:
     description: >
-      URL of patch file to be applied after each tag is synchronized as a branch.
-      Patch url can usually be obtained by comparing two branches or commits.
+      URL of patch file to be applied after each tag is synced as a branch. Patch url can
+      usually be obtained by comparing two branches or commits.
       
       
       The process of applying patch occurs before the "git push", so if the value is
       empty, it means that all new branches will be pushed directly to the "head-repository"
-      after the tags are synchronized.
+      after the tags are synced.
       
       
       The value based on the [URL Standard](https://url.spec.whatwg.org/).
@@ -45,10 +45,10 @@ inputs:
     default: 'github-actions[bot]@users.noreply.github.com'
   patch-committer:
     description: 'Committer for "git commit" when applying patch'
-    default: 'chachako'
+    default: 'github-actions[bot]'
   patch-committer-email:
     description: 'Committer email for "git commit" when applying patch'
-    default: '58068445+chachako@users.noreply.github.com'
+    default: 'github-actions[bot]@users.noreply.github.com'
   commands-after-sync:
     description: >
       Bash commands to be executed after each new branch is pushed. This is equivalent
