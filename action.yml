@@ -52,10 +52,23 @@ inputs:
   patch-committer-email:
     description: 'Committer email for "git commit" when applying patch'
     default: 'github-actions[bot]@users.noreply.github.com'
-  commands-after-sync:
+  scripts-after-sync:
     description: >
-      Bash commands to be executed after each new branch is pushed. This is equivalent
-      to running `bash -c "${VALUE}"`.
+      Shell scripts runs after each new branch is pushed. Multiple scripts separated
+      by '#!'.
+      
+      
+      For example, here are two different scripts:
+
+
+      #!/bin/bash
+
+      echo "Hello World"
+      
+      
+      #!/bin/bash
+
+      echo "Hello World 2"
     default: ''
   github-token:
     description: >
@@ -97,7 +110,7 @@ runs:
         PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}
         PATCH_COMMITTER=${{ inputs.patch-committer }}
         PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}
-        COMMANDS_AFTER_SYNC=${{ inputs.commands-after-sync }}
+        SCRIPTS_AFTER_SYNC=${{ inputs.scripts-after-sync }}
         GITHUB_TOKEN=${{ inputs.github-token }}
         GITHUB_WORKSPACE=${{ github.workspace }}
         GITHUB_ACTOR=${{ github.actor }}

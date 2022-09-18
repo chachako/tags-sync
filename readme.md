@@ -41,7 +41,8 @@ then whatever comes next is up to your Github workflow!
 
 **`head-repository`**:
 
-- **default** - [`context github.repository`](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context)
+- **default**
+    - [`context github.repository`](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context)
 
 > **Note**
 >
@@ -127,11 +128,21 @@ under [$GITHUB_WORKSPACE](https://docs.github.com/en/actions/learn-github-action
 >
 > Committer email for `git commit` when applying patch.
 
-**`commands-after-sync`**:
+**`scripts-after-sync`**:
 
 > **Note**
-> Bash commands to be executed after each new branch is pushed. This is equivalent
-> to running `bash -c "${VALUE}"`.
+> Shell scripts runs after each new branch is pushed. Multiple scripts separated by `#!`.
+>
+> For example, here are two different scripts:
+>
+> ```bash
+> #!/bin/bash
+> echo "Hello World"
+> 
+> 
+> #!/bin/bash
+> echo "Hello World 2"
+> ```
 
 **`github-token`**:
 
