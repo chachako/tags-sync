@@ -110,9 +110,10 @@ runs:
         PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}
         PATCH_COMMITTER=${{ inputs.patch-committer }}
         PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}
-        SCRIPTS_AFTER_SYNC=${{ inputs.scripts-after-sync }}
         GITHUB_TOKEN=${{ inputs.github-token }}
-        GITHUB_WORKSPACE=${{ github.workspace }}
-        GITHUB_ACTOR=${{ github.actor }}
+        
+        IFS='' read -r -d '' SCRIPTS_AFTER_SYNC <<"TMP_EOF"
+        ${{ inputs.scripts-after-sync }}
+        TMP_EOF
         
         cargo run --release
