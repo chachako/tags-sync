@@ -175,7 +175,7 @@ jobs:
           base-repository: torvalds/linux
           patch-author: chachako
           patch-author-email: 58068445+chachako@users.noreply.github.com
-          commands-after-sync: |
+          scripts-after-sync: |
             echo "Hello World!"
             git tag -a v1.0 -m "my version 1.0"
             git push origin v1.0
