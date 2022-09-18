@@ -1,4 +1,7 @@
 name: 'tags-sync'
+branding:
+  icon: 'airplay'
+  color: 'yellow'
 description: 'Sync another repository new tags as branches. (upstream -> fork)'
 inputs:
   base-repository:
