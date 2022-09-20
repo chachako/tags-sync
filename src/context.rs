@@ -111,9 +111,12 @@ impl Context {
     /// branches.
     pub async fn sync_tags(&self, new_tags: &[&str]) -> Result<()> {
         // Download the patch file to prepare for subsequent work
-        let response = reqwest::get(self.patch_file_url.clone()).await?;
-        let patch = response.bytes().await?;
-        let diff = Diff::from_buffer(&patch)?;
+        let diff = None::<Diff>;
+        if let Some(patch_file_url) = &self.patch_file_url {
+            let response = reqwest::get(patch_file_url.clone()).await?;
+            let patch = response.bytes().await?;
+            Diff::from_buffer(&patch)?;
+        }
 
         let cloned_repo = self.clone_repo().await?;
         // Make sure all tags are fetched from upstream
@@ -133,7 +136,9 @@ impl Context {
             cloned_repo.checkout_tag(tag)?;
             // Once the branch is synced, we can apply the patch
             // to complete any needed changes
-            cloned_repo.apply_patch(&diff, self.commit_info()?)?;
+            if let Some(diff) = &diff {
+                cloned_repo.apply_patch(diff, self.commit_info()?)?;
+            }
             // Push all changes to the remote
             cloned_repo.push_head()?;
         }
@@ -205,7 +210,7 @@ impl Context {
         )?;
         let message = get_env!("PATCH_MESSAGE");
         let message = if message.is_empty() {
-            format!("Apply patch from {}", self.patch_file_url)
+            format!("Apply patch from {}", self.patch_file_url.clone().unwrap())
         } else {
             message
         };
