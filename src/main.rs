@@ -37,7 +37,9 @@ async fn main() {
     init_logger();
 
     let mut args = env::args();
-    let stage = Stage::from_str(args.next().unwrap().as_str());
+    let stage = args.next().unwrap();
+    info!("Stage: {}", stage);
+    let stage = Stage::from_str(stage.as_str());
     let config = Context::new().unwrap();
 
     match stage {
@@ -64,7 +66,7 @@ async fn main() {
             info!("Synced successfully.");
         }
         Err(e) => {
-            info!("Invalid stage: {}", e);
+            panic!("Invalid stage: {}", e);
         }
     }
 }
