@@ -89,7 +89,7 @@ runs:
         echo "HEAD_REPO=${{ inputs.head-repository }}" >> $GITHUB_ENV
         echo "CLONED_PATH=${{ inputs.cloned-path }}" >> $GITHUB_ENV
         echo "FILTER_TAGS=${{ inputs.filter-tags }}" >> $GITHUB_ENV
-        echo "APPLY_PATCH=${{ inputs.apply-patch }}" >> $GITHUB_ENV
+        echo "PATCH_URL=${{ inputs.apply-patch }}" >> $GITHUB_ENV
         echo "PATCH_MESSAGE=${{ inputs.patch-message }}" >> $GITHUB_ENV
         echo "PATCH_AUTHOR=${{ inputs.patch-author }}" >> $GITHUB_ENV
         echo "PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}" >> $GITHUB_ENV
