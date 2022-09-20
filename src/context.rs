@@ -1,20 +1,15 @@
 use std::{
-    collections::HashSet,
     fmt,
-    fmt::{Debug, Formatter, Write as FmtWrite},
-    fs,
-    io::{BufRead, Read, Write as IoWrite},
+    fmt::{Debug, Formatter},
     path::{Path, PathBuf},
-    process::Command,
 };
 
 use anyhow::{bail, Context as ResultContext, Result};
 use git2::{BranchType, Diff, Repository, Signature};
 use log::debug;
-use octocrab::{models::repos::Tag, repos::RepoHandler, Octocrab};
+use octocrab::{repos::RepoHandler, Octocrab};
 use regex::Regex;
 use reqwest::Url;
-use run_script::ScriptOptions;
 
 use crate::{
     consts::*,
@@ -44,8 +39,6 @@ pub struct Context {
     patch_file_url: Url,
     /// GitHub API client.
     github_api: Octocrab,
-    /// Shell scripts runs after each new branch is pushed.
-    scripts_after_sync: HashSet<String>,
 }
 
 impl Context {
@@ -67,27 +60,6 @@ impl Context {
         let (base_repo_owner, base_repo_name) = parse_repo(get_env!("BASE_REPO"))?;
         let (head_repo_owner, head_repo_name) = parse_repo(get_env!("HEAD_REPO"))?;
 
-        // Multiple scripts separated by line starts with '#!'
-        let mut scripts = HashSet::<String>::new();
-        let mut script = String::new();
-        for line in get_env!("SCRIPTS_AFTER_SYNC").lines() {
-            let line = line.trim();
-            if line.starts_with("#!") {
-                // Add previous script
-                if !script.is_empty() {
-                    scripts.insert(script);
-                }
-                // Create new script
-                script = String::new();
-            } else {
-                writeln!(script, "{line}")?;
-            }
-        }
-        // Add last script
-        if !script.is_empty() {
-            scripts.insert(script);
-        }
-
         let result = Self {
             base_repo_owner,
             head_repo_owner,
@@ -97,7 +69,6 @@ impl Context {
             filter_tags: Regex::new(&get_env!("FILTER_TAGS"))?,
             patch_file_url: Url::parse(&get_env!("PATCH_URL"))?,
             clone_path: github_workspace_path.join(&get_env!("CLONED_PATH")),
-            scripts_after_sync: scripts,
         };
 
         debug!("Load configuration {:#?}", &result);
@@ -165,13 +136,6 @@ impl Context {
             cloned_repo.apply_patch(&diff, self.commit_info()?)?;
             // Push all changes to the remote
             cloned_repo.push_head()?;
-            // Run addition bash commands
-            if !self.scripts_after_sync.is_empty() {
-                let options = ScriptOptions::new();
-                for script in &self.scripts_after_sync {
-                    run_script::run_or_exit(script, &vec![], &options);
-                }
-            }
         }
 
         Ok(())
