@@ -36,7 +36,7 @@ pub struct Context {
     /// Filter tags by regular expression.
     filter_tags: Regex,
     /// URL of patch file to apply to the head repository.
-    patch_file_url: Url,
+    patch_file_url: Option<Url>,
     /// GitHub API client.
     github_api: Octocrab,
 }
@@ -67,7 +67,7 @@ impl Context {
             head_repo_name,
             github_api: github_api()?,
             filter_tags: Regex::new(&get_env!("FILTER_TAGS"))?,
-            patch_file_url: Url::parse(&get_env!("PATCH_URL"))?,
+            patch_file_url: Url::parse(&get_env!("PATCH_URL")).ok(),
             clone_path: github_workspace_path.join(&get_env!("CLONED_PATH")),
         };
 
