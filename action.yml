@@ -1,8 +1,11 @@
 name: 'tags-sync'
-branding:
-  icon: 'airplay'
-  color: 'yellow'
+author: 'chachako'
 description: 'Sync another repository new tags as branches. (upstream -> fork)'
+
+branding:
+  icon: 'git-branch'
+  color: 'gray-dark'
+
 inputs:
   base-repository:
     description: 'Base (upstream) repository name with owner. For example, torvalds/linux'
@@ -52,24 +55,6 @@ inputs:
   patch-committer-email:
     description: 'Committer email for "git commit" when applying patch'
     default: 'github-actions[bot]@users.noreply.github.com'
-  scripts-after-sync:
-    description: >
-      Shell scripts runs after each new branch is pushed. Multiple scripts separated
-      by '#!'.
-      
-      
-      For example, here are two different scripts:
-
-
-      #!/bin/bash
-
-      echo "Hello World"
-      
-      
-      #!/bin/bash
-
-      echo "Hello World 2"
-    default: ''
   github-token:
     description: >
       Personal access token (PAT) used to fetch the repository. The PAT is configured
@@ -83,6 +68,11 @@ inputs:
       
       [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
     default: ${{ github.token }}
+
+outputs:
+  new-tags:
+    description: "Names of all new tags, one tag line by line."
+
 runs:
   using: 'composite'
   steps:
@@ -90,30 +80,44 @@ runs:
     - uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
 
+    - name: Configure environment variables
+      shell: bash
+      run: |
+        echo "Configure environment variables..."
+        echo "RUST_LOG=DEBUG" >> $GITHUB_ENV
+        echo "BASE_REPO=${{ inputs.base-repository }}" >> $GITHUB_ENV
+        echo "HEAD_REPO=${{ inputs.head-repository }}" >> $GITHUB_ENV
+        echo "CLONED_PATH=${{ inputs.cloned-path }}" >> $GITHUB_ENV
+        echo "FILTER_TAGS=${{ inputs.filter-tags }}" >> $GITHUB_ENV
+        echo "APPLY_PATCH=${{ inputs.apply-patch }}" >> $GITHUB_ENV
+        echo "PATCH_MESSAGE=${{ inputs.patch-message }}" >> $GITHUB_ENV
+        echo "PATCH_AUTHOR=${{ inputs.patch-author }}" >> $GITHUB_ENV
+        echo "PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}" >> $GITHUB_ENV
+        echo "PATCH_COMMITTER=${{ inputs.patch-committer }}" >> $GITHUB_ENV
+        echo "PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}" >> $GITHUB_ENV
+        echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
+
+    - name: Detect new tags from base repository
+      id: new-tags
+      shell: bash
+      run: |
+        echo "Detect new tags from base repository..."
+        cargo run --release Detect
+
     - name: Configure cache for head repository
       uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/${{ inputs.cloned-path }}
-        key: tags-sync-${{ inputs.base-repository }}-${{ hashFiles(format('{0}/new_tags.txt', github.workspace)) }}
+        key: tags-sync-${{ inputs.base-repository }}-${{ steps.new-tags.outputs.new-tags }}
 
-    - name: Build and run
+    - name: Sync new tags to head repository
+      if: steps.new-tags.outputs.new-tags != ''
       shell: bash
       run: |
-        RUST_LOG=DEBUG
-        BASE_REPO=${{ inputs.base-repository }}
-        HEAD_REPO=${{ inputs.head-repository }}
-        CLONED_PATH=${{ inputs.cloned-path }}
-        FILTER_TAGS=${{ inputs.filter-tags }}
-        PATCH_URL=${{ inputs.apply-patch }}
-        PATCH_MESSAGE=${{ inputs.patch-message }}
-        PATCH_AUTHOR=${{ inputs.patch-author }}
-        PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}
-        PATCH_COMMITTER=${{ inputs.patch-committer }}
-        PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}
-        GITHUB_TOKEN=${{ inputs.github-token }}
-        
-        IFS='' read -r -d '' SCRIPTS_AFTER_SYNC <<"TMP_EOF"
-        ${{ inputs.scripts-after-sync }}
-        TMP_EOF
-        
-        cargo run --release
+        echo "Sync new tags to head repository..."
+        cargo run --release Sync '${{ steps.new-tags.outputs.new-tags }}'
+
+    - name: Nothing to sync
+      if: steps.new-tags.outputs.new-tags == ''
+      shell: bash
+      run: echo "Nothing to sync."

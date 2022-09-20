@@ -48,6 +48,24 @@ impl RepoHandlerExt for RepoHandler<'_> {
     }
 }
 
+pub trait TagsExt {
+    fn names(self) -> Vec<String>;
+}
+
+impl TagsExt for Vec<Tag> {
+    fn names(self) -> Vec<String> {
+        self.iter().map(|tag| tag.name.clone()).collect()
+    }
+}
+
+pub struct Action;
+
+impl Action {
+    pub(crate) fn set_output(key: &str, value: &str) {
+        println!("::set-output name={}::{}", key, value);
+    }
+}
+
 pub fn github_api() -> Result<Octocrab> {
     Ok(Octocrab::builder()
         .personal_token(github_token()?)

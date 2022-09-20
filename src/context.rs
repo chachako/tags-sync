@@ -19,7 +19,7 @@ use run_script::ScriptOptions;
 use crate::{
     consts::*,
     get_env,
-    utils::{github_api, github_token, CommitInfo, RepoExt},
+    utils::{github_api, github_token, CommitInfo, RepoExt, TagsExt},
     RepoHandlerExt,
 };
 
@@ -44,8 +44,6 @@ pub struct Context {
     patch_file_url: Url,
     /// GitHub API client.
     github_api: Octocrab,
-    /// File with all tags are stored.
-    new_tags_file: PathBuf,
     /// Shell scripts runs after each new branch is pushed.
     scripts_after_sync: HashSet<String>,
 }
@@ -99,7 +97,6 @@ impl Context {
             filter_tags: Regex::new(&get_env!("FILTER_TAGS"))?,
             patch_file_url: Url::parse(&get_env!("PATCH_URL"))?,
             clone_path: github_workspace_path.join(&get_env!("CLONED_PATH")),
-            new_tags_file: github_workspace_path.join("new_tags.txt"),
             scripts_after_sync: scripts,
         };
 
@@ -117,7 +114,7 @@ impl Context {
     ///
     /// A corresponding branch name of a tag is in "sync-${tag_name}" format.
     /// For example, the corresponding branch of the "v1.0" tag is "sync-v1.0".
-    pub async fn new_tags(&self) -> Result<Vec<Tag>> {
+    pub async fn new_tags(&self) -> Result<Vec<String>> {
         let mut new_tags = Vec::new();
         let base_tags = self.base_repo().list_all_tags().await?;
         let head_branches = self.head_repo().list_all_branches().await?;
@@ -136,22 +133,11 @@ impl Context {
             }
         }
 
-        // Save new tags to the file for use as a cache key in Github Action
-        fs::write(
-            &self.new_tags_file,
-            new_tags
-                .iter()
-                .map(|tag| tag.name.as_str())
-                .collect::<Vec<_>>()
-                .join(",")
-                .as_bytes(),
-        )
-        .context("Failed to write new tags to file")?;
-
-        Ok(new_tags)
+        Ok(new_tags.names())
     }
 
-    /// Sync [`new_tags`] from the base repository to the head repository as branches.
+    /// Sync [`new_tags`] from the base repository to the head repository as
+    /// branches.
     pub async fn sync_tags(&self, new_tags: &[&str]) -> Result<()> {
         // Download the patch file to prepare for subsequent work
         let response = reqwest::get(self.patch_file_url.clone()).await?;
@@ -311,7 +297,10 @@ mod tests {
         // We know that the head repository does not have any branch corresponding to
         // the tag of the base repository, so all the tags of the base repository are
         // new.
-        assert_eq!(context.new_tags().await?, context.base_repo().list_all_tags().await?);
+        assert_eq!(
+            context.new_tags().await?,
+            context.base_repo().list_all_tags().await?.names()
+        );
     });
 
     test_with_context!(clone_repo(context) {

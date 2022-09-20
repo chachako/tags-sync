@@ -1,7 +1,7 @@
 # Break comments to fit on the line
 wrap_comments = true
 # Maximum length of comments. No effect unlesswrap_comments = true.
-comment_width = 100
+comment_width = 80
 # Replace uses of the try! macro by the ? shorthand
 use_try_shorthand = true
 # Reorder impl items. type and const are put first, then macros and methods
