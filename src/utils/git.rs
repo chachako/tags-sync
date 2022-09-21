@@ -5,10 +5,7 @@ use git2::{
 };
 use log::{debug, log_enabled, Level::Debug};
 
-use crate::{
-    consts::*,
-    utils::{github_token, CommitInfo},
-};
+use crate::{consts::*, utils::CommitInfo};
 
 pub trait RepoExt {
     fn fetch_upstream_tags(&self, tags: &[&str]) -> Result<()>;
@@ -24,11 +21,7 @@ impl RepoExt for Repository {
             self.remotes()?
                 .iter()
                 .filter_map(|name| self.find_remote(name.unwrap()).ok())
-                .map(|remote| remote
-                    .url()
-                    .unwrap_or("unknown")
-                    .to_string()
-                    .replace(&github_token().unwrap(), "<GITHUB_TOKEN>"))
+                .map(|remote| remote.url().unwrap_or("unknown").to_string())
                 .collect::<Vec<_>>()
                 .join(", ")
         );

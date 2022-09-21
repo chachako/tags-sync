@@ -180,12 +180,14 @@ impl Context {
         };
 
         // Set Github person access token for origin-remote
+        let actor = get_env!("GITHUB_ACTOR");
         repo.remote_set_url(
             ORIGIN,
             format!(
-                "https://{}@github.com/{}/{}.git",
+                "https://{}:{}@github.com/{}/{}.git",
+                actor,
                 github_token()?,
-                get_env!("GITHUB_ACTOR"),
+                actor,
                 self.head_repo_name
             )
             .as_str(),

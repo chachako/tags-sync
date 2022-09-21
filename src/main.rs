@@ -1,6 +1,6 @@
 extern crate core;
 
-use std::{env, fs, iter, str::FromStr};
+use std::{env, fs, str::FromStr};
 
 use anyhow::Context as ResultContext;
 use itertools::Itertools;
@@ -10,7 +10,6 @@ use strum::EnumString;
 use Stage::Detect;
 
 use crate::{
-    consts::SYNC_PREFIX,
     context::Context,
     utils::{Action, RepoHandlerExt},
     Stage::Sync,
