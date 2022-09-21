@@ -90,11 +90,8 @@ impl RepoExt for Repository {
         let mut callbacks = RemoteCallbacks::new();
         // Using github token
         callbacks.credentials(|_, _, _| {
-            let github_name = env::var("GITHUB_ACTOR")
-                .context("Cannot get GITHUB_ACTOR")
-                .unwrap();
             let github_token = github_token().context("Cannot get GITHUB_TOKEN").unwrap();
-            Cred::userpass_plaintext(&github_name, &github_token)
+            Cred::userpass_plaintext(&github_token, "x-oauth-basic")
         });
         callbacks.certificate_check(|_, _| true);
         callbacks.push_update_reference(|reference, status| {
