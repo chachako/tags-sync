@@ -190,18 +190,6 @@ impl Context {
             )
             .as_str(),
         )?;
-        repo.remote_set_pushurl(
-            ORIGIN,
-            Some(
-                format!(
-                    "https://{}@github.com/{}/{}.git",
-                    github_token()?,
-                    get_env!("GITHUB_ACTOR"),
-                    self.head_repo_name
-                )
-                .as_str(),
-            ),
-        )?;
 
         debug!("Cloned repository path: {}", repo.path().display());
 

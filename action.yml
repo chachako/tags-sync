@@ -92,7 +92,7 @@ runs:
       run: |
         echo "Configure environment variables..."
         echo "RUST_LOG=DEBUG" >> $GITHUB_ENV
-        echo "RUST_BACKTRACE=1" >> $GITHUB_ENV
+        echo "RUST_BACKTRACE=full" >> $GITHUB_ENV
         echo "BASE_REPO=${{ inputs.base-repository }}" >> $GITHUB_ENV
         echo "HEAD_REPO=${{ inputs.head-repository }}" >> $GITHUB_ENV
         echo "CLONED_PATH=${{ inputs.cloned-path }}" >> $GITHUB_ENV
