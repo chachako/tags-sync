@@ -1,11 +1,16 @@
+use std::env;
+
 use anyhow::{Context, Result};
 use git2::{
-    ApplyLocation, AutotagOption, Diff, FetchOptions, ProxyOptions, PushOptions, RemoteCallbacks,
-    Repository,
+    ApplyLocation, AutotagOption, Cred, Diff, FetchOptions, ProxyOptions, PushOptions,
+    RemoteCallbacks, Repository,
 };
 use log::{debug, log_enabled, Level::Debug};
 
-use crate::{consts::*, utils::CommitInfo};
+use crate::{
+    consts::*,
+    utils::{github_token, CommitInfo},
+};
 
 pub trait RepoExt {
     fn fetch_upstream_tags(&self, tags: &[&str]) -> Result<()>;
@@ -97,6 +102,14 @@ impl RepoExt for Repository {
 
     fn push_head(&self) -> Result<()> {
         let mut callbacks = RemoteCallbacks::new();
+        // Using github token
+        callbacks.credentials(|_, _, _| {
+            let github_name = env::var("GITHUB_ACTOR")
+                .context("Cannot get GITHUB_ACTOR")
+                .unwrap();
+            let github_token = github_token().context("Cannot get GITHUB_TOKEN").unwrap();
+            Cred::userpass_plaintext(&github_name, &github_token)
+        });
         callbacks.push_update_reference(|reference, status| {
             debug!("Pushed reference='{}', status='{:?}'", reference, status);
             Ok(())

@@ -12,8 +12,8 @@ jobs:
         id: tags-sync
         uses: ./
         with:
-          base-repository: gradle/gradle
-          head-repository: meowool/sweekt-gradle
+          base-repository: mamoe/mirai
+          head-repository: meowool/mirai
           patch-author: chachako
           patch-author-email: 58068445+chachako@users.noreply.github.com
           filter-tags: 'v[7-9]\..*'
@@ -22,12 +22,14 @@ jobs:
         run: |
           while read tag
           do
-          　　echo $tag
+            echo $tag
           done < ${{ steps.tags-sync.outputs.new-tags-file }}
 
-      - name: Print synced branches
+      - name: Print and remove synced branches
         run: |
+          cd ${{ steps.tags-sync.inputs.cloned-path }}
           while read branch
           do
-          　　echo $branch
+            echo $branch
+            git push origin --delete $branch
           done < ${{ steps.tags-sync.outputs.synced-branches-file }}
