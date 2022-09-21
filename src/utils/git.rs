@@ -21,20 +21,6 @@ pub trait RepoExt {
 
 impl RepoExt for Repository {
     fn fetch_upstream_tags(&self, tags: &[&str]) -> Result<()> {
-        debug!(
-            "Remote urls: '{}'",
-            self.remotes()?
-                .iter()
-                .filter_map(|name| self.find_remote(name.unwrap()).ok())
-                .map(|remote| format!(
-                    "{}={}",
-                    remote.name().unwrap().to_owned(),
-                    remote.url().unwrap().to_owned()
-                ))
-                .collect::<Vec<_>>()
-                .join(", ")
-        );
-
         // Fetch only specified tags from upstream
         let refspecs = tags
             .iter()
