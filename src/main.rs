@@ -1,15 +1,17 @@
 extern crate core;
 
-use std::{env, str::FromStr};
+use std::{env, fs, str::FromStr};
 
 use anyhow::Context as ResultContext;
 use log::info;
 use pretty_env_logger::init as init_logger;
 use strum::EnumString;
+use Stage::Detect;
 
 use crate::{
     context::Context,
     utils::{Action, RepoHandlerExt},
+    Stage::Sync,
 };
 
 mod consts;
@@ -36,30 +38,39 @@ enum Stage {
 async fn main() {
     init_logger();
 
-    let mut args = env::args();
-    let stage = Stage::from_str(args.nth(1).unwrap().as_str());
+    let stage = Stage::from_str(env::args().nth(1).unwrap().as_str());
     let config = Context::new().unwrap();
+    let new_tags_file = config.github_workspace().join("new_tags.txt");
+    let new_tags_file = new_tags_file.as_path();
 
     match stage {
-        Ok(Stage::Detect) => {
-            let tags = config
+        Ok(Detect) => {
+            let new_tags = config
                 .new_tags()
                 .await
                 .context("Failed to get new tags")
                 .unwrap();
-            Action::set_output("new-tags", &tags.join("\n"));
-            info!("New tags found: '{}', prepare to sync...", tags.join(", "));
-        }
-        Ok(Stage::Sync) => {
-            let arg = args
-                .nth(2)
-                .context("Tags arg must be present in the Sync stage")
+
+            // Save new tags to a file
+            fs::write(new_tags_file, new_tags.join("\n").as_bytes())
+                .context("Failed to write new tags to file")
                 .unwrap();
-            let tags = arg.split('\n').collect::<Vec<_>>();
+
+            Action::set_output("new-tags-file", new_tags_file.to_str().unwrap());
+            info!(
+                "New tags found: '{}', prepare to sync...",
+                new_tags.join(", ")
+            );
+        }
+        Ok(Sync) => {
+            let file_content = fs::read_to_string(new_tags_file)
+                .context("Failed to read new tags from file")
+                .unwrap();
+            let new_tags = file_content.split('\n').collect::<Vec<_>>();
             config
-                .sync_tags(&tags)
+                .sync_tags(&new_tags)
                 .await
-                .context("Failed to sync tags")
+                .context("Failed to sync new tags")
                 .unwrap();
             info!("Synced successfully.");
         }

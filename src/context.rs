@@ -76,6 +76,10 @@ impl Context {
         Ok(result)
     }
 
+    pub fn github_workspace(&self) -> &Path {
+        self.clone_path.parent().unwrap()
+    }
+
     /// Returns the new tags in the base repository.
     ///
     /// ## Details

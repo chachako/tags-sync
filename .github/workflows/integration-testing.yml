@@ -9,6 +9,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Sync new tags
+        id: tags-sync
         uses: ./
         with:
           base-repository: gradle/gradle
@@ -17,4 +18,15 @@ jobs:
           filter-tags: 'v[7-9]\..*'
 
       - name: Print new tags
-        run: echo ${{ steps.sync.outputs.new-tags }}
+        run: |
+          while read tag
+          do
+          　　echo $tag
+          done < ${{ steps.tags-sync.outputs.new-tags }}
+
+      - name: Print synced branches
+        run: |
+          while read branch
+          do
+          　　echo $branch
+          done < ${{ steps.tags-sync.outputs.synced-branches }}
