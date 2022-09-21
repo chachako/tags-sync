@@ -21,7 +21,11 @@ impl RepoExt for Repository {
             self.remotes()?
                 .iter()
                 .filter_map(|name| self.find_remote(name.unwrap()).ok())
-                .map(|remote| remote.url().unwrap_or("unknown").to_string())
+                .map(|remote| format!(
+                    "{}={}",
+                    remote.name().unwrap().to_owned(),
+                    remote.url().unwrap().to_owned()
+                ))
                 .collect::<Vec<_>>()
                 .join(", ")
         );
