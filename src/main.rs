@@ -3,6 +3,7 @@ extern crate core;
 use std::{env, fs, str::FromStr};
 
 use anyhow::Context as ResultContext;
+use consts::SYNC_PREFIX;
 use itertools::Itertools;
 use log::info;
 use pretty_env_logger::init as init_logger;
@@ -88,7 +89,7 @@ async fn main() {
                 synced_branches_file,
                 new_tags
                     .iter()
-                    .map(|tag| format!("{SYNC_PREFIX}{tag}"))
+                    .map(|tag| format!("{}{tag}", SYNC_PREFIX))
                     .join("\n")
                     .as_bytes(),
             )
