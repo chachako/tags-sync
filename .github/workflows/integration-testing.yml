@@ -13,6 +13,7 @@ jobs:
         uses: ./
         with:
           base-repository: gradle/gradle
+          head-repository: meowool/sweekt-gradle
           patch-author: chachako
           patch-author-email: 58068445+chachako@users.noreply.github.com
           filter-tags: 'v[7-9]\..*'
