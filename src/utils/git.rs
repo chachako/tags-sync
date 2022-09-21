@@ -89,13 +89,13 @@ impl RepoExt for Repository {
     fn push_head(&self) -> Result<()> {
         let mut callbacks = RemoteCallbacks::new();
         // Using github token
-        // callbacks.credentials(|_, _, _| {
-        //     let github_name = env::var("GITHUB_ACTOR")
-        //         .context("Cannot get GITHUB_ACTOR")
-        //         .unwrap();
-        //     let github_token = github_token().context("Cannot get
-        // GITHUB_TOKEN").unwrap();     Cred::userpass_plaintext(&github_name,
-        // &github_token) });
+        callbacks.credentials(|_, _, _| {
+            let github_name = env::var("GITHUB_ACTOR")
+                .context("Cannot get GITHUB_ACTOR")
+                .unwrap();
+            let github_token = github_token().context("Cannot get GITHUB_TOKEN").unwrap();
+            Cred::userpass_plaintext(&github_name, &github_token)
+        });
         callbacks.certificate_check(|_, _| true);
         callbacks.push_update_reference(|reference, status| {
             debug!("Pushed reference='{}', status='{:?}'", reference, status);
