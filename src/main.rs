@@ -57,6 +57,7 @@ async fn main() {
                 .unwrap();
 
             Action::set_output("new-tags-file", new_tags_file.to_str().unwrap());
+
             info!(
                 "New tags found: '{}', prepare to sync...",
                 new_tags.join(", ")
@@ -67,6 +68,7 @@ async fn main() {
                 .context("Failed to read new tags from file")
                 .unwrap();
             let new_tags = file_content.split('\n').collect::<Vec<_>>();
+
             config
                 .sync_tags(&new_tags)
                 .await
