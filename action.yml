@@ -108,7 +108,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/${{ inputs.cloned-path }}
-        key: tags-sync-${{ inputs.base-repository }}-${{ steps.new-tags.outputs.new-tags }}
+        key: 'tags-sync-${{ inputs.base-repository }}-${{ steps.new-tags.outputs.new-tags }}'
 
     - name: Sync new tags to head repository
       if: steps.new-tags.outputs.new-tags != ''
