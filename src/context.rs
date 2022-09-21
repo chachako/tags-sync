@@ -137,14 +137,22 @@ impl Context {
 
         // Checkout all the new tags as branches
         for tag in new_tags {
-            cloned_repo.checkout_tag(tag)?;
+            cloned_repo
+                .checkout_tag(tag)
+                .context(format!("Failed to checkout tag: {tag}"))?;
+
             // Once the branch is synced, we can apply the patch
             // to complete any needed changes
             if let Some(diff) = &diff {
-                cloned_repo.apply_patch(diff, self.commit_info()?)?;
+                cloned_repo
+                    .apply_patch(diff, self.commit_info()?)
+                    .context(format!("Failed to apply patch to {SYNC_PREFIX}{tag}"))?;
             }
+
             // Push all changes to the remote
-            cloned_repo.push_head()?;
+            cloned_repo
+                .push_head()
+                .context(format!("Failed to push branch: {SYNC_PREFIX}{tag}"))?;
         }
 
         Ok(())
