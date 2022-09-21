@@ -22,11 +22,11 @@ jobs:
           while read tag
           do
           　　echo $tag
-          done < ${{ steps.tags-sync.outputs.new-tags }}
+          done < ${{ steps.tags-sync.outputs.new-tags-file }}
 
       - name: Print synced branches
         run: |
           while read branch
           do
           　　echo $branch
-          done < ${{ steps.tags-sync.outputs.synced-branches }}
+          done < ${{ steps.tags-sync.outputs.synced-branches-file }}

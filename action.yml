@@ -70,11 +70,11 @@ inputs:
     default: ${{ github.token }}
 
 outputs:
-  new-tags:
+  new-tags-file:
     value: ${{ steps.new-tags.outputs.new-tags }}
     description: >
       A file stores the name of each new tag of the "base-repository" by line.
-  synced-branches:
+  synced-branches-file:
     value: ${{ steps.new-tags.outputs.synced-branches }}
     description: >
       A file stores the name of each new branch of the "head-repository" by line, and
@@ -115,16 +115,16 @@ runs:
       uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/${{ inputs.cloned-path }}
-        key: 'tags-sync-${{ inputs.base-repository }}-${{ hashFiles(steps.new-tags.outputs.new-tags) }}'
+        key: 'tags-sync-${{ inputs.base-repository }}-${{ hashFiles(steps.new-tags.outputs.new-tags-file) }}'
 
     - name: Sync new tags to head repository
-      if: steps.new-tags.outputs.new-tags != ''
+      if: steps.new-tags.outputs.new-tags-file != ''
       shell: bash
       run: |
         echo "Sync new tags to head repository..."
         cargo run --release Sync
 
     - name: Nothing to sync
-      if: steps.new-tags.outputs.new-tags == ''
+      if: steps.new-tags.outputs.new-tags-file == ''
       shell: bash
       run: echo "Nothing to sync."

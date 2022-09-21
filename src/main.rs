@@ -1,14 +1,16 @@
 extern crate core;
 
-use std::{env, fs, str::FromStr};
+use std::{env, fs, iter, str::FromStr};
 
 use anyhow::Context as ResultContext;
+use itertools::Itertools;
 use log::info;
 use pretty_env_logger::init as init_logger;
 use strum::EnumString;
 use Stage::Detect;
 
 use crate::{
+    consts::SYNC_PREFIX,
     context::Context,
     utils::{Action, RepoHandlerExt},
     Stage::Sync,
@@ -51,6 +53,11 @@ async fn main() {
                 .context("Failed to get new tags")
                 .unwrap();
 
+            if new_tags.is_empty() {
+                // Nothing to sync
+                return;
+            }
+
             // Save new tags to a file
             fs::write(new_tags_file, new_tags.join("\n").as_bytes())
                 .context("Failed to write new tags to file")
@@ -74,6 +81,26 @@ async fn main() {
                 .await
                 .context("Failed to sync new tags")
                 .unwrap();
+
+            // Save synced branches to a file
+            let synced_branches_file = config.github_workspace().join("synced_branches.txt");
+            let synced_branches_file = synced_branches_file.as_path();
+            fs::write(
+                synced_branches_file,
+                new_tags
+                    .iter()
+                    .map(|tag| format!("{SYNC_PREFIX}{tag}"))
+                    .join("\n")
+                    .as_bytes(),
+            )
+            .context("Failed to write synced branches to file")
+            .unwrap();
+
+            Action::set_output(
+                "synced-branches-file",
+                synced_branches_file.to_str().unwrap(),
+            );
+
             info!("Synced successfully.");
         }
         Err(e) => {
