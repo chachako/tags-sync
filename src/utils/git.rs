@@ -1,5 +1,3 @@
-use std::env;
-
 use anyhow::{Context, Result};
 use git2::{
     ApplyLocation, AutotagOption, Cred, Diff, FetchOptions, ProxyOptions, PushOptions,
@@ -91,9 +89,8 @@ impl RepoExt for Repository {
         // Using github token
         callbacks.credentials(|_, _, _| {
             let github_token = github_token().context("Cannot get GITHUB_TOKEN").unwrap();
-            Cred::userpass_plaintext(&github_token, "x-oauth-basic")
+            Cred::userpass_plaintext(&github_token, "")
         });
-        callbacks.certificate_check(|_, _| true);
         callbacks.push_update_reference(|reference, status| {
             debug!("Pushed reference='{}', status='{:?}'", reference, status);
             Ok(())
