@@ -67,7 +67,7 @@ inputs:
       
       
       [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-    default: ${{ secrets.GITHUB_TOKEN }}
+    default: ''
 
 outputs:
   new-tags-file:
@@ -103,7 +103,12 @@ runs:
         echo "PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}" >> $GITHUB_ENV
         echo "PATCH_COMMITTER=${{ inputs.patch-committer }}" >> $GITHUB_ENV
         echo "PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}" >> $GITHUB_ENV
-        echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
+        
+        if [[ -n "${{ inputs.github-token }}" ]]; then
+          echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
+        else
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+        fi
 
     - name: Detect new tags from base repository
       id: new-tags
