@@ -73,7 +73,7 @@ pub fn github_api() -> Result<Octocrab> {
     // Print the first three digits and the last three digits.
     debug!(
         "GitHub token: {}***{}",
-        &token[..3],
+        &token[..5],
         &token[token.len() - 3..]
     );
     Ok(Octocrab::builder()
