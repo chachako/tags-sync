@@ -67,7 +67,7 @@ inputs:
       
       
       [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-    default: ${{ github.token }}
+    default: ${{ secrets.GITHUB_TOKEN }}
 
 outputs:
   new-tags-file:
