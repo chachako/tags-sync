@@ -14,7 +14,7 @@ use reqwest::Url;
 use crate::{
     consts::*,
     get_env,
-    utils::{github_api, github_token, CommitInfo, RepoExt, TagsExt},
+    utils::{github_api, CommitInfo, RepoExt, TagsExt},
     RepoHandlerExt,
 };
 

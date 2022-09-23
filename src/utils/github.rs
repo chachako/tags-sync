@@ -2,7 +2,6 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
-use log::debug;
 use octocrab::{
     models::repos::{Branch, Tag},
     repos::RepoHandler,
@@ -68,13 +67,6 @@ impl Action {
 }
 
 pub fn github_api() -> Result<Octocrab> {
-    let token = github_token()?;
-    // Print the first three digits and the last three digits.
-    debug!(
-        "GitHub token: {}***{}",
-        &token[..5],
-        &token[token.len() - 5..]
-    );
     Ok(Octocrab::builder()
         .personal_token(github_token()?)
         .build()?)

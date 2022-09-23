@@ -7,6 +7,17 @@ branding:
   color: 'gray-dark'
 
 inputs:
+  github-token:
+    description: >
+      Personal access token (PAT) used to fetch and push the "head-repository".
+      
+      
+      We recommend using a service account with the least permissions necessary.
+      Also when generating a new PAT, select the least scopes necessary.
+      
+      
+      [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+    required: true
   base-repository:
     description: 'Base (upstream) repository name with owner. For example, torvalds/linux'
     required: true
@@ -55,19 +66,6 @@ inputs:
   patch-committer-email:
     description: 'Committer email for "git commit" when applying patch'
     default: 'github-actions[bot]@users.noreply.github.com'
-  github-token:
-    description: >
-      Personal access token (PAT) used to fetch the repository. The PAT is configured
-      with the local git config, which enables your scripts to run authenticated git
-      commands. The post-job step removes the PAT.
-      
-      
-      We recommend using a service account with the least permissions necessary.
-      Also when generating a new PAT, select the least scopes necessary.
-      
-      
-      [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-    default: ''
 
 outputs:
   new-tags-file:
@@ -103,12 +101,7 @@ runs:
         echo "PATCH_AUTHOR_EMAIL=${{ inputs.patch-author-email }}" >> $GITHUB_ENV
         echo "PATCH_COMMITTER=${{ inputs.patch-committer }}" >> $GITHUB_ENV
         echo "PATCH_COMMITTER_EMAIL=${{ inputs.patch-committer-email }}" >> $GITHUB_ENV
-        
-        if [[ -n "${{ inputs.github-token }}" ]]; then
-          echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
-        else
-          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
-        fi
+        echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
 
     - name: Detect new tags from base repository
       id: new-tags
