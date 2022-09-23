@@ -1,7 +1,9 @@
+use std::env;
+
 use anyhow::{Context, Result};
 use git2::{
     ApplyLocation, AutotagOption, Cred, Diff, FetchOptions, ProxyOptions, PushOptions,
-    RemoteCallbacks, RemoteRedirect, Repository,
+    RemoteCallbacks, Repository,
 };
 use log::{debug, log_enabled, Level::Debug};
 
@@ -88,8 +90,13 @@ impl RepoExt for Repository {
         let mut callbacks = RemoteCallbacks::new();
         // Using github token
         callbacks.credentials(|_, _, _| {
-            let github_token = github_token().context("Cannot get GITHUB_TOKEN").unwrap();
-            Cred::userpass_plaintext("x-access-token", &github_token)
+            let user = env::var("GITHUB_ACTOR")
+                .context("Cannot get GITHUB_ACTOR in environment")
+                .unwrap();
+            let token = github_token()
+                .context("Cannot get GITHUB_TOKEN in environment")
+                .unwrap();
+            Cred::userpass_plaintext(&user, &token)
         });
         callbacks.push_update_reference(|reference, status| {
             debug!(
