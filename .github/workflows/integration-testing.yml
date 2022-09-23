@@ -12,6 +12,7 @@ jobs:
         id: tags-sync
         uses: ./
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           base-repository: mamoe/mirai
           head-repository: meowool/mirai
           patch-author: chachako
@@ -20,16 +21,20 @@ jobs:
 
       - name: Print new tags
         run: |
-          while read tag
-          do
-            echo $tag
-          done < ${{ steps.tags-sync.outputs.new-tags-file }}
+          if [ -f "${{ steps.tags-sync.outputs.new-tags-file }}" ]; then
+            while read tag
+            do
+              echo $tag
+            done < ${{ steps.tags-sync.outputs.new-tags-file }}
+          fi
 
       - name: Print and remove synced branches
         run: |
-          cd ${{ steps.tags-sync.inputs.cloned-path }}
-          while read branch
-          do
-            echo $branch
-            git push origin --delete $branch
-          done < ${{ steps.tags-sync.outputs.synced-branches-file }}
+          if [ -f "${{ steps.tags-sync.outputs.synced-branches-file }}" ]; then
+            cd ${{ steps.tags-sync.inputs.cloned-path }}
+            while read branch
+            do
+              echo $branch
+              git push origin --delete $branch
+            done < ${{ steps.tags-sync.outputs.synced-branches-file }}
+          fi

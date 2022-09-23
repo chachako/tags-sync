@@ -63,7 +63,10 @@ async fn main() {
                 .context("Failed to write new tags to file")
                 .unwrap();
 
-            Action::set_output("new-tags-file", new_tags_file.to_str().unwrap());
+            Action::set_output(
+                "new-tags-file",
+                new_tags_file.canonicalize().unwrap().to_str().unwrap(),
+            );
 
             info!(
                 "New tags found: '{}', prepare to sync...",
@@ -98,7 +101,11 @@ async fn main() {
 
             Action::set_output(
                 "synced-branches-file",
-                synced_branches_file.to_str().unwrap(),
+                synced_branches_file
+                    .canonicalize()
+                    .unwrap()
+                    .to_str()
+                    .unwrap(),
             );
 
             info!("Synced successfully.");
