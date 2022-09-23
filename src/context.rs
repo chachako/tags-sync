@@ -187,6 +187,18 @@ impl Context {
             Repository::open(&self.clone_path)?
         };
 
+        // Set Github person access token for origin-remote
+        repo.remote_set_url(
+            ORIGIN,
+            format!(
+                "https://{}@github.com/{}/{}.git",
+                github_token()?,
+                get_env!("GITHUB_ACTOR"),
+                self.head_repo_name
+            )
+            .as_str(),
+        )?;
+
         debug!("Cloned repository path: {}", repo.path().display());
 
         Ok(repo)
