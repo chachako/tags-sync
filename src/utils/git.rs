@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use git2::{
     ApplyLocation, AutotagOption, Cred, Diff, FetchOptions, ProxyOptions, PushOptions,
-    RemoteCallbacks, Repository,
+    RemoteCallbacks, RemoteRedirect, Repository,
 };
 use log::{debug, log_enabled, Level::Debug};
 
@@ -104,6 +104,7 @@ impl RepoExt for Repository {
         options
             .packbuilder_parallelism(0)
             .proxy_options(proxy_auto())
+            .follow_redirects(RemoteRedirect::All)
             .remote_callbacks(callbacks);
 
         // Push all changes from the current branch to the origin
