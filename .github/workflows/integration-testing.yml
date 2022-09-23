@@ -17,7 +17,6 @@ jobs:
           patch-author: chachako
           patch-author-email: 58068445+chachako@users.noreply.github.com
           filter-tags: 'v[2-9]\.[1-9][2-9].*'
-          github-token: ${{ secrets.TOKEN }}
 
       - name: Print new tags
         run: |
