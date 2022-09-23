@@ -92,7 +92,11 @@ impl RepoExt for Repository {
             Cred::userpass_plaintext(&github_token, "")
         });
         callbacks.push_update_reference(|reference, status| {
-            debug!("Pushed reference='{}', status='{:?}'", reference, status);
+            debug!(
+                "Pushed reference='{}', succeed='{}'",
+                reference,
+                status.is_none()
+            );
             Ok(())
         });
 
@@ -120,7 +124,10 @@ pub fn proxy_auto<'a>() -> ProxyOptions<'a> {
 
 #[cfg(test)]
 mod tests {
-    use git2::Repository;
+    use std::{fs::File, io::prelude::*, time::SystemTime};
+
+    use git2::*;
+    use log::info;
     use tempfile::tempdir;
 
     use super::*;
@@ -151,5 +158,49 @@ mod tests {
             repo.head()?.name(),
             Some(format!("refs/heads/{SYNC_PREFIX}{EXPECTED_TAG}").as_str())
         );
+    });
+
+    test_fn!(push_head {
+        if option_env!("GITHUB_TEST").is_none() {
+            info!("GITHUB_TEST is not set, skipping test");
+            return Ok(());
+        }
+
+        let temp_dir = tempdir()?.path().to_path_buf();
+        let repo = Repository::clone("https://github.com/chachako/git2-rs-test.git", &temp_dir)?;
+
+        // Make some random changes
+        let time = SystemTime::now();
+        let time = time.duration_since(SystemTime::UNIX_EPOCH)?.as_secs().to_string();
+        let mut file = File::options()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open(repo.workdir().unwrap().join("test.txt"))?;
+        writeln!(file, "{}", &time)?;
+
+        let last_commit = repo.head()?.peel_to_commit()?;
+        let author = last_commit.author();
+        let author = Signature::now(author.name().unwrap(), author.email().unwrap())?;
+        let message = format!("test for {}", time);
+
+        // Commit changes
+        let mut index = repo.index()?;
+        index.add_all(&["*"], IndexAddOption::DEFAULT, None)?;
+        let tree_id = index.write_tree()?;
+        let tree = repo.find_tree(tree_id)?;
+        let parent_commit = repo.head()?.peel_to_commit()?;
+
+        repo.commit(
+            Some("HEAD"),
+            &author,
+            &author,
+            &message,
+            &tree,
+            &[&parent_commit]
+        )?;
+
+        // Push changes
+        repo.push_head()?;
     });
 }
