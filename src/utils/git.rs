@@ -104,7 +104,6 @@ impl RepoExt for Repository {
         options
             .packbuilder_parallelism(0)
             .proxy_options(proxy_auto())
-            .follow_redirects(RemoteRedirect::All)
             .remote_callbacks(callbacks);
 
         // Push all changes from the current branch to the origin
@@ -168,7 +167,7 @@ mod tests {
         }
 
         let temp_dir = tempdir()?.path().to_path_buf();
-        let repo = Repository::clone("https://github.com/chachako/git2-rs-test.git", &temp_dir)?;
+        let repo = Repository::clone("https://github.com/meowool/git2-rs-test.git", &temp_dir)?;
 
         // Make some random changes
         let time = SystemTime::now();
