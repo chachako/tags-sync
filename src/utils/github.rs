@@ -2,7 +2,6 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
-use git2::build;
 use log::debug;
 use octocrab::{
     models::repos::{Branch, Tag},
@@ -74,7 +73,7 @@ pub fn github_api() -> Result<Octocrab> {
     debug!(
         "GitHub token: {}***{}",
         &token[..5],
-        &token[token.len() - 3..]
+        &token[token.len() - 5..]
     );
     Ok(Octocrab::builder()
         .personal_token(github_token()?)
